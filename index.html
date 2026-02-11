@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Himani Patil | AI & Cyber Analyst</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;700&family=Fira+Code:wght@300;400;500&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #030303;
+            --text-color: #ffffff;
+            --accent-pink: #9d174d;
+            --accent-bright: #db2777;
+        }
+
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-pink) transparent;
+        }
+
+        #preloader {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 9999;
+            font-family: 'Fira Code', monospace;
+            display: flex;
+            align-items: flex-end;
+            padding: 60px;
+        }
+
+        .countdown-text {
+            font-size: clamp(4rem, 15vw, 8rem);
+            font-weight: 700;
+            color: var(--accent-pink);
+            line-height: 0.8;
+            text-shadow: 0 0 40px rgba(157, 23, 77, 0.4);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Space Grotesk', sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        canvas#canvas3d {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            pointer-events: none;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 5rem 10%;
+            position: relative;
+            z-index: 2;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .glass-card:hover {
+            background: rgba(157, 23, 77, 0.05);
+            transform: translateY(-8px);
+            border-color: var(--accent-pink);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .project-tag {
+            font-size: 10px;
+            padding: 4px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--accent-bright);
+            margin-right: 6px;
+            margin-bottom: 6px;
+            display: inline-block;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 2px;
+        }
+
+        .project-row {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .project-row:hover {
+            background: rgba(157, 23, 77, 0.03);
+            padding-left: 20px;
+            border-bottom-color: var(--accent-pink);
+        }
+
+        .btn-core {
+            border: 1px solid var(--accent-pink);
+            color: var(--accent-pink);
+            padding: 14px 28px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            font-weight: bold;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .btn-core:hover {
+            background: var(--accent-pink);
+            color: white;
+            box-shadow: 0 0 25px rgba(157, 23, 77, 0.5);
+            transform: scale(1.05);
+        }
+
+        .terminal-window {
+            background: #050505;
+            border: 1px solid rgba(157, 23, 77, 0.3);
+            font-family: 'Fira Code', monospace;
+            height: 450px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.9);
+        }
+
+        /* Removed extra box/border from header */
+        .terminal-header {
+            background: rgba(157, 23, 77, 0.15);
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(157, 23, 77, 0.2);
+        }
+
+        #terminal-body {
+            flex-grow: 1;
+            padding: 24px;
+            overflow-y: auto;
+            font-size: 14px;
+            color: #ececec;
+            line-height: 1.7;
+        }
+
+        .prompt {
+            color: var(--accent-bright);
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .cmd-input {
+            background: transparent !important;
+            border: none !important;
+            color: #fff !important;
+            outline: none !important;
+            width: 70%;
+            font-family: inherit;
+            box-shadow: none !important;
+            padding: 0 !important;
+        }
+
+        .pink-gradient-text {
+            background: linear-gradient(90deg, #fff 30%, var(--accent-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .grid-pattern {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: 0;
+            left: -50%;
+            background-image:
+                linear-gradient(rgba(157, 23, 77, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(157, 23, 77, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            transform: perspective(1000px) rotateX(60deg);
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0.6;
+            font-size: 10px;
+            letter-spacing: 4px;
+            color: var(--accent-pink);
+        }
+
+        .scroll-dot {
+            width: 1px;
+            height: 50px;
+            background: linear-gradient(to bottom, var(--accent-pink), transparent);
+            margin-top: 12px;
+            animation: scrolldown 2.5s infinite ease-in-out;
+        }
+
+        @keyframes scrolldown {
+            0% {
+                transform: scaleY(0);
+                transform-origin: top;
+            }
+
+            50% {
+                transform: scaleY(1);
+                transform-origin: top;
+            }
+
+            51% {
+                transform: scaleY(1);
+                transform-origin: bottom;
+            }
+
+            100% {
+                transform: scaleY(0);
+                transform-origin: bottom;
+            }
+        }
+
+        nav a {
+            position: relative;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--accent-pink);
+            transition: width 0.3s ease;
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        input,
+        textarea {
+            background: rgba(255, 255, 255, 0.03) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: var(--accent-pink) !important;
+            outline: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="preloader">
+        <div>
+            <div class="status-text text-zinc-500 text-[10px] tracking-[0.6em] mb-4 uppercase">
+                System_Bootstrap_Sequence_Active</div>
+            <div class="countdown-text" id="countdown">03</div>
+            <div class="w-64 h-[1px] bg-zinc-900 mt-6 overflow-hidden">
+                <div id="loading-bar" class="h-full bg-pink-800 w-0 transition-all duration-300"></div>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="canvas3d"></canvas>
+
+    <nav class="fixed top-0 w-full p-8 md:px-12 flex justify-between items-center z-50 mix-blend-difference">
+        <div class="text-xl font-bold tracking-widest text-pink-700">HP_CORE.v1</div>
+        <div class="hidden md:flex space-x-12 text-[10px] uppercase tracking-[0.5em] font-bold">
+            <a href="#experience" class="hover:text-pink-500 transition-colors">/Experience</a>
+            <a href="#work" class="hover:text-pink-500 transition-colors">/Archive</a>
+            <a href="#credentials" class="hover:text-pink-500 transition-colors">/Kernel</a>
+            <a href="#contact" class="hover:text-pink-500 transition-colors">/Transmit</a>
+        </div>
+    </nav>
+
+    <section class="section" id="home">
+        <div class="mb-4 text-xs font-mono text-pink-700 tracking-[0.7em] uppercase">Auth: Himani_Patil //
+            CGPA_9.16_LOADED</div>
+        <h1 id="hero-name" class="text-6xl md:text-[9rem] font-bold leading-[0.8] tracking-tighter mb-10 min-h-[1em]">
+            &nbsp;</h1>
+        <div class="max-w-4xl">
+            <h2 class="text-3xl md:text-6xl font-light text-zinc-500 leading-[1.1]">
+                Engineering <span class="text-white">Intelligent Systems</span> & <span class="pink-gradient-text">Cyber
+                    Resilience</span>.
+            </h2>
+            <div class="mt-12 flex flex-wrap gap-8">
+                <!-- RESUME BUTTON IN HERO -->
+                <a href="HIMANIs Resume.pdf" download class="btn-core">Download CV</a>
+                <a href="#work"
+                    class="btn-core border-white/20 text-white hover:bg-white hover:text-black hover:border-white">Browse
+                    Repos</a>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <span>SCROLL</span>
+            <div class="scroll-dot"></div>
+        </div>
+    </section>
+
+    <section id="experience" class="section">
+        <h2 class="text-xs font-mono text-pink-700 mb-16 tracking-[0.6em]">01. CAREER_TRAJECTORY</h2>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
+            <!-- Experience 1 -->
+            <div class="glass-card p-12">
+                <span class="text-pink-700 font-mono text-xs tracking-widest"></span>
+                <h3 class="text-3xl font-bold mt-4">Planto AI</h3>
+                <p class="text-pink-500 text-sm mt-2 uppercase tracking-[0.2em] font-medium">AI Trainee</p>
+                <p class="mt-8 text-zinc-400 text-md leading-relaxed">
+                    Engineering enterprise-grade AI copilots designed to automate complex coding workflows,
+                    reducing technical debt and optimizing developer cycles through LLM integration.
+                </p>
+            </div>
+            <!-- Experience 2 -->
+            <div class="glass-card p-12">
+                <span class="text-pink-700 font-mono text-xs tracking-widest">JULY 2025 - DEC 2025</span>
+                <h3 class="text-3xl font-bold mt-4">DeepCytes Labs</h3>
+                <p class="text-pink-500 text-sm mt-2 uppercase tracking-[0.2em] font-medium">Cyber Analyst Fellow</p>
+                <p class="mt-8 text-zinc-400 text-md leading-relaxed">
+                    Spearheaded offensive security operations, focusing on vulnerability research,
+                    penetration testing, and exploit development within simulated enterprise perimeters.
+                </p>
+            </div>
+            <!-- Experience 3 -->
+            <div class="glass-card p-12">
+                <span class="text-pink-700 font-mono text-xs tracking-widest">SEPT 2025 - NOV 2025</span>
+                <h3 class="text-3xl font-bold mt-4">JSW Foundation</h3>
+                <p class="text-pink-500 text-sm mt-2 uppercase tracking-[0.2em] font-medium">Future Maker Intern</p>
+                <p class="mt-8 text-zinc-400 text-md leading-relaxed">
+                    Spearheaded 'Think AI' sessions, translating complex machine learning concepts into engaging,
+                    hands-on activities for young innovators.
+                </p>
+            </div>
+            <!-- Experience 4 -->
+            <div class="glass-card p-12">
+                <span class="text-pink-700 font-mono text-xs tracking-widest">MAY 2024 - JUNE 2024</span>
+                <h3 class="text-3xl font-bold mt-4">Google-AICTE</h3>
+                <p class="text-pink-500 text-sm mt-2 uppercase tracking-[0.2em] font-medium">AI-ML Virtual Intern</p>
+                <p class="mt-8 text-zinc-400 text-md leading-relaxed">
+                    Intensive industry-endorsed internship focused on Deep Learning and CV-based identification systems
+                    development.
+                </p>
+            </div>
+            <!-- Experience 5: GDSC -->
+            <div class="glass-card p-12">
+                <span class="text-pink-700 font-mono text-xs tracking-widest">2023 - 2024</span>
+                <h3 class="text-3xl font-bold mt-4">GDSC SAKEC</h3>
+                <p class="text-pink-500 text-sm mt-2 uppercase tracking-[0.2em] font-medium">Management Team</p>
+                <p class="mt-8 text-zinc-400 text-md leading-relaxed">
+                    Orchestrated technical workshops and community events, driving student engagement with Google
+                    technologies and open-source development.
+                </p>
+            </div>
+            <!-- Experience 6: IIC -->
+            <div class="glass-card p-12">
+                <span class="text-pink-700 font-mono text-xs tracking-widest">2024 - PRESENT</span>
+                <h3 class="text-3xl font-bold mt-4">IIC SAKEC</h3>
+                <p class="text-pink-500 text-sm mt-2 uppercase tracking-[0.2em] font-medium">Documentation Head</p>
+                <p class="mt-8 text-zinc-400 text-md leading-relaxed">
+                    Leading the documentation vertical for the Institution's Innovation Council, managing reports for
+                    startup initiatives and hackathons.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section id="work" class="section bg-black/40">
+        <h2 class="text-xs font-mono text-pink-700 mb-16 tracking-[0.6em]">02. TECHNICAL_ARCHIVE [S7]</h2>
+        <div class="space-y-2">
+            <!-- Project 01: Silent Symphonies -->
+            <div
+                class="project-row group py-12 flex flex-col md:flex-row justify-between items-start md:items-center px-6">
+                <div class="max-w-2xl">
+                    <h3
+                        class="text-3xl md:text-5xl font-bold group-hover:text-pink-700 transition-all uppercase italic">
+                        Silent Symphonies</h3>
+                    <div class="mt-4 flex flex-wrap">
+                        <span class="project-tag">Computer Vision</span>
+                        <span class="project-tag">Flask</span>
+                        <span class="project-tag">LSTM Networks</span>
+                    </div>
+                    <p class="text-zinc-500 mt-4 text-md">Bridging communication gaps with real-time sign language
+                        translation using computer vision to map dynamic gestures to precise text output.</p>
+                </div>
+                <div class="mt-8 md:mt-0"><a href="https://github.com/hap4114" target="_blank"
+                        class="btn-core px-6 py-3">View_Source</a></div>
+            </div>
+
+            <!-- Project 02: Multi-Bank Parser -->
+            <div
+                class="project-row group py-12 flex flex-col md:flex-row justify-between items-start md:items-center px-6">
+                <div class="max-w-2xl">
+                    <h3
+                        class="text-3xl md:text-5xl font-bold group-hover:text-pink-700 transition-all uppercase italic">
+                        Multi-Bank Parser</h3>
+                    <div class="mt-4 flex flex-wrap">
+                        <span class="project-tag">Python</span>
+                        <span class="project-tag">Tesseract OCR</span>
+                        <span class="project-tag">Streamlit</span>
+                    </div>
+                    <p class="text-zinc-500 mt-4 text-md">Automated financial data extraction from diverse, unstructured
+                        PDF bank statements using high-accuracy OCR pipelines.</p>
+                </div>
+                <div class="mt-8 md:mt-0"><a href="https://github.com/hap4114" target="_blank"
+                        class="btn-core px-6 py-3">View_Source</a></div>
+            </div>
+
+            <!-- Project 03: Bug Detection AI -->
+            <div
+                class="project-row group py-12 flex flex-col md:flex-row justify-between items-start md:items-center px-6">
+                <div class="max-w-2xl">
+                    <h3
+                        class="text-3xl md:text-5xl font-bold group-hover:text-pink-700 transition-all uppercase italic">
+                        AI Bug Detector</h3>
+                    <div class="mt-4 flex flex-wrap">
+                        <span class="project-tag">Static Analysis</span>
+                        <span class="project-tag">NLP</span>
+                        <span class="project-tag">ML Modeling</span>
+                    </div>
+                    <p class="text-zinc-500 mt-4 text-md">Intelligent code analysis tool identifying logical and syntax
+                        vulnerabilities through deep learning on labeled code repositories.</p>
+                </div>
+                <div class="mt-8 md:mt-0"><a href="https://github.com/hap4114" target="_blank"
+                        class="btn-core px-6 py-3">View_Source</a></div>
+            </div>
+
+            <!-- Project 04: YOLO Detection -->
+            <div
+                class="project-row group py-12 flex flex-col md:flex-row justify-between items-start md:items-center px-6">
+                <div class="max-w-2xl">
+                    <h3
+                        class="text-3xl md:text-5xl font-bold group-hover:text-pink-700 transition-all uppercase italic">
+                        YOLO Detection</h3>
+                    <div class="mt-4 flex flex-wrap">
+                        <span class="project-tag">PyTorch</span>
+                        <span class="project-tag">OpenCV</span>
+                        <span class="project-tag">Real-Time</span>
+                    </div>
+                    <p class="text-zinc-500 mt-4 text-md">High-speed object detection pipeline implementation utilizing
+                        YOLO architectures for traffic and safety monitoring.</p>
+                </div>
+                <div class="mt-8 md:mt-0"><a href="https://github.com/hap4114" target="_blank"
+                        class="btn-core px-6 py-3">View_Source</a></div>
+            </div>
+
+            <!-- Project 05: Carbon Footprint -->
+            <div
+                class="project-row group py-12 flex flex-col md:flex-row justify-between items-start md:items-center px-6">
+                <div class="max-w-2xl">
+                    <h3
+                        class="text-3xl md:text-5xl font-bold group-hover:text-pink-700 transition-all uppercase italic">
+                        Carbon Footprint</h3>
+                    <div class="mt-4 flex flex-wrap">
+                        <span class="project-tag">JavaScript</span>
+                        <span class="project-tag">Bootstrap</span>
+                        <span class="project-tag">Sustainability</span>
+                    </div>
+                    <p class="text-zinc-500 mt-4 text-md">Interactive calculator for tracking personal and business
+                        carbon emissions with actionable reduction insights.</p>
+                </div>
+                <div class="mt-8 md:mt-0"><a href="https://github.com/hap4114" target="_blank"
+                        class="btn-core px-6 py-3">View_Source</a></div>
+            </div>
+
+            <!-- Project 06: Expense Tracker -->
+            <div
+                class="project-row group py-12 flex flex-col md:flex-row justify-between items-start md:items-center px-6">
+                <div class="max-w-2xl">
+                    <h3
+                        class="text-3xl md:text-5xl font-bold group-hover:text-pink-700 transition-all uppercase italic">
+                        Expense Tracker</h3>
+                    <div class="mt-4 flex flex-wrap">
+                        <span class="project-tag">Flask</span>
+                        <span class="project-tag">SQLAlchemy</span>
+                        <span class="project-tag">D3.js</span>
+                    </div>
+                    <p class="text-zinc-500 mt-4 text-md">Scalable financial application evolving from a CLI tool to a
+                        database-backed web app with data visualization.</p>
+                </div>
+                <div class="mt-8 md:mt-0"><a href="https://github.com/hap4114" target="_blank"
+                        class="btn-core px-6 py-3">View_Source</a></div>
+            </div>
+
+            <!-- Project 07: Yelp NLP -->
+            <div
+                class="project-row group py-12 flex flex-col md:flex-row justify-between items-start md:items-center px-6">
+                <div class="max-w-2xl">
+                    <h3
+                        class="text-3xl md:text-5xl font-bold group-hover:text-pink-700 transition-all uppercase italic">
+                        Yelp NLP Analysis</h3>
+                    <div class="mt-4 flex flex-wrap">
+                        <span class="project-tag">NLP</span>
+                        <span class="project-tag">Prompt Engineering</span>
+                        <span class="project-tag">TF-IDF</span>
+                    </div>
+                    <p class="text-zinc-500 mt-4 text-md">Sentiment analysis model for Yelp reviews, leveraging prompt
+                        engineering to improve classification accuracy.</p>
+                </div>
+                <div class="mt-8 md:mt-0"><a href="https://github.com/hap4114" target="_blank"
+                        class="btn-core px-6 py-3">View_Source</a></div>
+            </div>
+        </div>
+        <div class="mt-20 text-center">
+            <a href="https://github.com/hap4114"
+                class="text-zinc-500 hover:text-white transition-colors text-xs tracking-widest border-b border-zinc-800 pb-2">LOAD
+                FULL REPOSITORY LIST</a>
+        </div>
+    </section>
+
+    <section id="credentials" class="section">
+        <h2 class="text-xs font-mono text-pink-700 mb-8 tracking-[0.6em]">03. SYSTEM_KERNEL_SHELL</h2>
+        <div class="terminal-window rounded-xl overflow-hidden">
+            <div class="terminal-header">
+                <div class="w-3 h-3 rounded-full bg-[#9d174d]"></div>
+                <div class="w-3 h-3 rounded-full bg-[#701a3e]"></div>
+                <div class="w-3 h-3 rounded-full bg-[#500724]"></div>
+                <span class="text-[11px] text-zinc-500 ml-6 font-mono tracking-wider">guest@himani-core: ~/root</span>
+            </div>
+            <div id="terminal-body" onclick="document.getElementById('terminal-input').focus()">
+                <div class="mb-4 text-zinc-600">HimaniOS v1.0.4-LTS Terminal Initialized... Secure Tunnel Established.
+                </div>
+                <div class="mb-4 text-zinc-400">Welcome, guest. Type <span class="text-pink-700">'help'</span> for a
+                    list of available sub-routines, including 'resume' to download credentials.</div>
+
+                <div class="mt-4 flex items-center">
+                    <span class="prompt">guest@core:~$</span>
+                    <input type="text" id="terminal-input" class="cmd-input" spellcheck="false" autocomplete="off">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="section">
+        <h2 class="text-xs font-mono text-pink-700 mb-16 tracking-[0.6em]">04. TRANSMIT_DATA_PACKET</h2>
+        <div class="grid md:grid-cols-2 gap-20">
+            <div>
+                <h3 class="text-6xl font-bold mb-10 leading-tight">Let's <span
+                        class="pink-gradient-text">Collaborate</span></h3>
+                <p class="text-zinc-500 text-lg mb-8 leading-relaxed">
+                    Always open to discussing AI security research, intelligent automation, or complex engineering
+                    challenges.
+                    Drop a signal through the grid or reach out directly.
+                </p>
+                <div class="space-y-4 mb-10">
+                    <div class="flex items-center gap-4 text-zinc-400 font-mono text-sm">
+                        <span class="text-pink-700">EMAIL:</span> himani.17034@sakec.ac.in
+                    </div>
+                    <div class="flex items-center gap-4 text-zinc-400 font-mono text-sm">
+                        <span class="text-pink-700">LOC:</span> Mumbai, India
+                    </div>
+                </div>
+                <div class="flex gap-6 mb-10">
+                    <a href="https://github.com/hap4114" target="_blank" class="btn-core">GitHub_Grid</a>
+                    <a href="https://linkedin.com" target="_blank" class="btn-core">LinkedIn_Auth</a>
+                </div>
+                <!-- RESUME BUTTON IN CONTACT -->
+                <div class="p-6 border border-zinc-800 bg-zinc-900/50 rounded-lg">
+                    <h4 class="text-white font-bold mb-2 uppercase text-xs tracking-widest">Technical Dossier</h4>
+                    <p class="text-zinc-500 text-xs mb-4">Securely download the full CV PDF.</p>
+                    <a href="HIMANIs Resume.pdf" download
+                        class="btn-core border-white/20 text-white hover:bg-white hover:text-black">Download CV</a>
+                </div>
+            </div>
+            <div class="glass-card p-12">
+                <!-- IMPORTANT: REPLACE "your_formspree_id" WITH YOUR ACTUAL FORMSPREE ID -->
+                <form id="contact-form" action="https://formspree.io/f/mgoloqrn" method="POST" class="space-y-8">
+                    <div class="relative">
+                        <input type="text" name="name" placeholder="GUEST_IDENTITY"
+                            class="w-full pb-3 bg-transparent border-b border-white/10 rounded-none focus:border-pink-800 outline-none transition-all placeholder:text-zinc-700"
+                            required>
+                    </div>
+                    <div class="relative">
+                        <input type="email" name="email" placeholder="RETURN_ADDRESS"
+                            class="w-full pb-3 bg-transparent border-b border-white/10 rounded-none focus:border-pink-800 outline-none transition-all placeholder:text-zinc-700"
+                            required>
+                    </div>
+                    <div class="relative">
+                        <textarea name="message" rows="5" placeholder="MESSAGE_PAYLOAD"
+                            class="w-full pb-3 bg-transparent border-b border-white/10 rounded-none focus:border-pink-800 outline-none transition-all placeholder:text-zinc-700"
+                            required></textarea>
+                    </div>
+                    <button type="submit" class="btn-core w-full justify-center group">
+                        TRANSMIT_PACKET
+                        <span class="group-hover:translate-x-2 transition-transform">→</span>
+                    </button>
+                    <div id="form-status" class="text-xs font-mono tracking-widest mt-4 hidden"></div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-20 relative overflow-hidden flex flex-col items-center">
+        <div class="grid-pattern opacity-40"></div>
+        <div class="relative z-10 text-center">
+            <div class="text-[10px] tracking-[1em] text-zinc-600 uppercase mb-4">Core_End_Transmission</div>
+            <div class="text-zinc-800 font-bold text-6xl">2026</div>
+            <div class="mt-4 text-zinc-500 text-xs tracking-widest uppercase">Made with ❤️ by Himani Patil</div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <script>
+        // TEXT JUMBLE EFFECT
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+        function jumbleText(el, target) {
+            let iter = 0;
+            const int = setInterval(() => {
+                el.innerText = target.split("").map((l, i) => {
+                    if (i < iter) return target[i];
+                    return chars[Math.floor(Math.random() * chars.length)];
+                }).join("");
+                if (iter >= target.length) clearInterval(int);
+                iter += 1 / 3;
+            }, 30);
+        }
+
+        // PRELOADER
+        const countdown = document.getElementById('countdown');
+        const loadBar = document.getElementById('loading-bar');
+        let count = 3;
+        const countInt = setInterval(() => {
+            count--;
+            countdown.innerText = count.toString().padStart(2, '0');
+            loadBar.style.width = ((3 - count) / 3 * 100) + '%';
+            if (count === 0) {
+                clearInterval(countInt);
+                gsap.to('#preloader', {
+                    y: '100%',
+                    duration: 1.2,
+                    ease: "expo.inOut",
+                    onComplete: () => {
+                        document.getElementById('preloader').style.display = 'none';
+                        jumbleText(document.getElementById('hero-name'), "HIMANI PATIL");
+                    }
+                });
+            }
+        }, 800);
+
+        // TERMINAL LOGIC
+        const terminalInput = document.getElementById('terminal-input');
+        const terminalBody = document.getElementById('terminal-body');
+        const commands = {
+            'help': 'Available Routines: about, skills, education, contact, status, clear, resume',
+            'about': 'Himani Patil: CSE B.Tech @ SAKEC. Focus: Neural Architectures & Cyber Defense Systems.',
+            'status': 'System Status: Optimal. CGPA: 9.16. Experience: Planto AI , DeepCytes, JSW, GDSC.',
+            'skills': 'Languages: Python, Java, JS. Tech: PyTorch, Flask, SQL, Kali Linux, React.',
+            'education': 'Shah & Anchor Kutchhi Engineering College: B.Tech in CSE (2022-2026).',
+            'resume': 'Initiating secure download protocol... <a href="HIMANIs Resume.pdf" download class="text-pink-500 underline">Click to Download PDF</a>',
+            'contact': 'Transmit via: himani.17034@sakec.ac.in | LinkedIn | GitHub: hap4114'
+        };
+
+        terminalInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const cmd = terminalInput.value.toLowerCase().trim();
+                const line = document.createElement('div');
+                line.className = 'mt-2';
+                line.innerHTML = `<span class="prompt">guest@core:~$</span> ${cmd}`;
+                terminalBody.insertBefore(line, terminalInput.parentElement);
+
+                if (cmd === 'clear') {
+                    terminalBody.querySelectorAll('div:not(:last-child)').forEach(d => d.remove());
+                } else if (commands[cmd]) {
+                    const res = document.createElement('div');
+                    res.className = 'text-zinc-500 mb-2 ml-4 italic';
+                    res.innerHTML = `> ${commands[cmd]}`;
+                    terminalBody.insertBefore(res, terminalInput.parentElement);
+                } else if (cmd !== "") {
+                    const error = document.createElement('div');
+                    error.className = 'text-red-900/60 mb-2 ml-4';
+                    error.innerHTML = `> Command '${cmd}' not found in kernel registry.`;
+                    terminalBody.insertBefore(error, terminalInput.parentElement);
+                }
+                terminalInput.value = '';
+                terminalBody.scrollTop = terminalBody.scrollHeight;
+            }
+        });
+
+        // THREE.JS CORE ENGINE
+        let scene, camera, renderer, particleSystem, originalPositions;
+        const particleCount = 3500;
+        let mouseX = 0, mouseY = 0;
+
+        function init3D() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({
+                canvas: document.getElementById('canvas3d'),
+                alpha: true,
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            originalPositions = new Float32Array(particleCount * 3);
+
+            for (let i = 0; i < particleCount; i++) {
+                const phi = Math.acos(-1 + (2 * i) / particleCount);
+                const theta = Math.sqrt(particleCount * Math.PI) * phi;
+
+                const radius = 18 + Math.random() * 2;
+                const x = radius * Math.cos(theta) * Math.sin(phi);
+                const y = radius * Math.sin(theta) * Math.sin(phi);
+                const z = radius * Math.cos(phi);
+
+                positions[i * 3] = x;
+                positions[i * 3 + 1] = y;
+                positions[i * 3 + 2] = z;
+                originalPositions[i * 3] = x;
+                originalPositions[i * 3 + 1] = y;
+                originalPositions[i * 3 + 2] = z;
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const material = new THREE.PointsMaterial({
+                color: 0x9d174d,
+                size: 0.1,
+                transparent: true,
+                opacity: 0.6,
+                blending: THREE.AdditiveBlending
+            });
+
+            particleSystem = new THREE.Points(geometry, material);
+            scene.add(particleSystem);
+            camera.position.z = 50;
+
+            document.addEventListener('mousemove', (e) => {
+                mouseX = (e.clientX - window.innerWidth / 2) * 0.02;
+                mouseY = (e.clientY - window.innerHeight / 2) * 0.02;
+            });
+
+            gsap.registerPlugin(ScrollTrigger);
+            ScrollTrigger.create({
+                trigger: "body",
+                start: "top top",
+                end: "bottom bottom",
+                onUpdate: (self) => {
+                    const progress = self.progress;
+                    const posArr = particleSystem.geometry.attributes.position.array;
+                    for (let i = 0; i < particleCount; i++) {
+                        const idx = i * 3;
+                        // Expansion effect on scroll
+                        const factor = 1 + (progress * 5);
+                        posArr[idx] = originalPositions[idx] * factor;
+                        posArr[idx + 1] = originalPositions[idx + 1] * factor;
+                        posArr[idx + 2] = originalPositions[idx + 2] * factor;
+                    }
+                    particleSystem.geometry.attributes.position.needsUpdate = true;
+                    particleSystem.material.opacity = 0.6 * (1 - progress);
+                }
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            // Smooth rotation based on mouse
+            particleSystem.rotation.y += (mouseX * 0.005 - particleSystem.rotation.y) * 0.05;
+            particleSystem.rotation.x += (mouseY * 0.005 - particleSystem.rotation.x) * 0.05;
+            // Constant rotation
+            particleSystem.rotation.y += 0.001;
+            renderer.render(scene, camera);
+        }
+
+        window.onload = () => {
+            window.scrollTo(0, 0);
+            init3D();
+            animate();
+        };
+
+        window.onresize = () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        };
+
+        // FORMSPREE AJAX
+
+        var form = document.getElementById("contact-form");
+        async function handleSubmit(event) {
+            event.preventDefault();
+            var status = document.getElementById("form-status");
+            var data = new FormData(event.target);
+            fetch(event.target.action, {
+                method: form.method,
+                body: data,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            }).then(response => {
+                if (response.ok) {
+                    status.innerHTML = "Packet Transmitted Successfully // Awaiting Handshake";
+                    status.className = "text-xs font-mono tracking-widest mt-4 text-green-500";
+                    form.reset();
+                } else {
+                    response.json().then(data => {
+                        if (Object.hasOwn(data, 'errors')) {
+                            status.innerHTML = data["errors"].map(error => error["message"]).join(", ");
+                        } else {
+                            status.innerHTML = "Transmission Failed // Retrying...";
+                        }
+                        status.className = "text-xs font-mono tracking-widest mt-4 text-red-500";
+                    })
+                }
+            }).catch(error => {
+                status.innerHTML = "Connection Error // Check Network Uplink";
+                status.className = "text-xs font-mono tracking-widest mt-4 text-red-500";
+            });
+        }
+        form.addEventListener("submit", handleSubmit);
+
+    </script>
+</body>
+
+</html>
